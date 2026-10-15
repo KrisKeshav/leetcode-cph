@@ -1,0 +1,57 @@
+{
+  "name": "leetcode-cph",
+  "displayName": "LeetCode CPH",
+  "description": "Fetch LeetCode sample test cases from a problem URL and run them locally against your C++ / Python solution.",
+  "version": "0.1.0",
+  "publisher": "kriskeshav",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KrisKeshav/leetcode-cph.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "leetcodeCph.fetchTestCases",
+        "title": "Fetch Test Cases from LeetCode",
+        "category": "CPH"
+      },
+      {
+        "command": "leetcodeCph.runTestCases",
+        "title": "Run Test Cases",
+        "category": "CPH"
+      }
+    ],
+    "configuration": {
+      "title": "LeetCode CPH",
+      "properties": {
+        "leetcodeCph.cppCompileCommand": {
+          "type": "string",
+          "default": "g++ -std=c++17 -O2",
+          "description": "Command used to compile C++ solutions (the file and -o output are appended)."
+        },
+        "leetcodeCph.pythonCommand": {
+          "type": "string",
+          "default": "python",
+          "description": "Command used to run Python solutions."
+        },
+        "leetcodeCph.timeLimitMs": {
+          "type": "number",
+          "default": 3000,
+          "description": "Time limit for each test case in milliseconds."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test test/"
+  }
+}

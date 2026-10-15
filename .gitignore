@@ -1,0 +1,5 @@
+node_modules/
+*.vsix
+*.exe
+*.out
+.vscode-test/
