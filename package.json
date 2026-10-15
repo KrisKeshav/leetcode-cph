@@ -27,9 +27,33 @@
       {
         "command": "leetcodeCph.runTestCases",
         "title": "Run Test Cases",
-        "category": "CPH"
+        "category": "CPH",
+        "icon": "$(play)"
       }
     ],
+    "keybindings": [
+      {
+        "command": "leetcodeCph.runTestCases",
+        "key": "ctrl+alt+b",
+        "mac": "cmd+alt+b",
+        "when": "editorLangId == cpp || editorLangId == python"
+      },
+      {
+        "command": "leetcodeCph.fetchTestCases",
+        "key": "ctrl+alt+l",
+        "mac": "cmd+alt+l",
+        "when": "editorLangId == cpp || editorLangId == python"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "leetcodeCph.runTestCases",
+          "when": "editorLangId == cpp || editorLangId == python",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "LeetCode CPH",
       "properties": {
