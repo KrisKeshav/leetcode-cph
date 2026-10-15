@@ -1,14 +1,13 @@
 const vscode = require('vscode');
+const path = require('path');
 const { getSlugFromUrl, fetchProblem } = require('./leetcode');
 const { getTestDir, saveTestCases, loadTestCases } = require('./testcases');
 const { getLanguage, runSolution } = require('./runner');
-
-let output;
+const { getVerdict } = require('./compare');
+const { showResults, showCompileError } = require('./resultsView');
 
 function activate(context) {
-  output = vscode.window.createOutputChannel('LeetCode CPH');
   context.subscriptions.push(
-    output,
     vscode.commands.registerCommand('leetcodeCph.fetchTestCases', fetchTestCases),
     vscode.commands.registerCommand('leetcodeCph.runTestCases', runTestCases)
   );
@@ -91,19 +90,20 @@ async function runTestCases() {
     () => runSolution(filePath, testDir, testCases, settings)
   );
 
-  output.clear();
-  output.show(true);
+  const title = path.basename(filePath);
   if (compileError) {
-    output.appendLine('Compilation Error:');
-    output.appendLine(compileError);
+    showCompileError(title, compileError);
     return;
   }
-  for (const result of results) {
-    output.appendLine(`Test ${result.id} (${result.timeMs} ms)`);
-    output.appendLine(`Input:\n${result.input}`);
-    output.appendLine(`Expected:\n${result.output}`);
-    output.appendLine(`Received:\n${result.stdout}${result.stderr}`);
-  }
+
+  results.forEach(result => (result.verdict = getVerdict(result)));
+  showResults(title, results);
+
+  const failed = results.filter(r => r.verdict !== 'Passed').length;
+  vscode.window.setStatusBarMessage(
+    failed === 0 ? `$(check) All ${results.length} tests passed` : `$(x) ${failed} test(s) failed`,
+    5000
+  );
 }
 
 function deactivate() {}
