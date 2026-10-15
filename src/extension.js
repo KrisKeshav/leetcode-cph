@@ -1,9 +1,14 @@
 const vscode = require('vscode');
 const { getSlugFromUrl, fetchProblem } = require('./leetcode');
-const { getTestDir, saveTestCases } = require('./testcases');
+const { getTestDir, saveTestCases, loadTestCases } = require('./testcases');
+const { getLanguage, runSolution } = require('./runner');
+
+let output;
 
 function activate(context) {
+  output = vscode.window.createOutputChannel('LeetCode CPH');
   context.subscriptions.push(
+    output,
     vscode.commands.registerCommand('leetcodeCph.fetchTestCases', fetchTestCases),
     vscode.commands.registerCommand('leetcodeCph.runTestCases', runTestCases)
   );
@@ -56,7 +61,49 @@ async function fetchTestCases() {
 }
 
 async function runTestCases() {
-  vscode.window.showInformationMessage('Run Test Cases: not implemented yet');
+  const document = getSolutionDocument();
+  if (!document) return;
+
+  const filePath = document.fileName;
+  if (!getLanguage(filePath)) {
+    vscode.window.showErrorMessage('Only C++ (.cpp) and Python (.py) files are supported.');
+    return;
+  }
+
+  const testDir = getTestDir(filePath);
+  const testCases = loadTestCases(testDir);
+  if (testCases.length === 0) {
+    vscode.window.showErrorMessage('No test cases found. Run "CPH: Fetch Test Cases from LeetCode" first.');
+    return;
+  }
+
+  await document.save();
+
+  const config = vscode.workspace.getConfiguration('leetcodeCph');
+  const settings = {
+    cppCompileCommand: config.get('cppCompileCommand'),
+    pythonCommand: config.get('pythonCommand'),
+    timeLimitMs: config.get('timeLimitMs')
+  };
+
+  const { compileError, results } = await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: 'Running test cases...' },
+    () => runSolution(filePath, testDir, testCases, settings)
+  );
+
+  output.clear();
+  output.show(true);
+  if (compileError) {
+    output.appendLine('Compilation Error:');
+    output.appendLine(compileError);
+    return;
+  }
+  for (const result of results) {
+    output.appendLine(`Test ${result.id} (${result.timeMs} ms)`);
+    output.appendLine(`Input:\n${result.input}`);
+    output.appendLine(`Expected:\n${result.output}`);
+    output.appendLine(`Received:\n${result.stdout}${result.stderr}`);
+  }
 }
 
 function deactivate() {}
